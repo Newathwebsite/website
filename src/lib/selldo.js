@@ -1,0 +1,106 @@
+// ATH Feathers' real, already-live CRM integration (Sell.do), ported verbatim
+// from the production static index.html this landing page replaces. These
+// values were already public in that shipped HTML (view-source), so keeping
+// them here is not a new exposure — same as before, this is a client-only
+// lead-capture call with no backend in between.
+import { getUtmParams, utmLabel } from './utm';
+
+const CRM_API = 'https://app.sell.do/api/leads/create';
+const CRM_KEY = '00655b78d91ff71abcf79e72acfeb612';
+const CRM_SRD = '6a5b390b58f1e726e7ed71e5';
+const DEFAULT_SOURCE_LABEL = 'feathers-kundrathur-Google Ads-page';
+
+export const ATH_COUNTRIES = [
+  ['AF', '93', 'Afghanistan'], ['AL', '355', 'Albania'], ['DZ', '213', 'Algeria'], ['AD', '376', 'Andorra'], ['AO', '244', 'Angola'],
+  ['AG', '1268', 'Antigua and Barbuda'], ['AR', '54', 'Argentina'], ['AM', '374', 'Armenia'], ['AU', '61', 'Australia'], ['AT', '43', 'Austria'],
+  ['AZ', '994', 'Azerbaijan'], ['BS', '1242', 'Bahamas'], ['BH', '973', 'Bahrain'], ['BD', '880', 'Bangladesh'], ['BB', '1246', 'Barbados'],
+  ['BY', '375', 'Belarus'], ['BE', '32', 'Belgium'], ['BZ', '501', 'Belize'], ['BJ', '229', 'Benin'], ['BT', '975', 'Bhutan'],
+  ['BO', '591', 'Bolivia'], ['BA', '387', 'Bosnia and Herzegovina'], ['BW', '267', 'Botswana'], ['BR', '55', 'Brazil'], ['BN', '673', 'Brunei'],
+  ['BG', '359', 'Bulgaria'], ['BF', '226', 'Burkina Faso'], ['BI', '257', 'Burundi'], ['KH', '855', 'Cambodia'], ['CM', '237', 'Cameroon'],
+  ['CA', '1', 'Canada'], ['CV', '238', 'Cape Verde'], ['CF', '236', 'Central African Republic'], ['TD', '235', 'Chad'], ['CL', '56', 'Chile'],
+  ['CN', '86', 'China'], ['CO', '57', 'Colombia'], ['KM', '269', 'Comoros'], ['CG', '242', 'Congo'], ['CD', '243', 'Congo (DRC)'],
+  ['CR', '506', 'Costa Rica'], ['HR', '385', 'Croatia'], ['CU', '53', 'Cuba'], ['CY', '357', 'Cyprus'], ['CZ', '420', 'Czech Republic'],
+  ['DK', '45', 'Denmark'], ['DJ', '253', 'Djibouti'], ['DM', '1767', 'Dominica'], ['DO', '1809', 'Dominican Republic'], ['EC', '593', 'Ecuador'],
+  ['EG', '20', 'Egypt'], ['SV', '503', 'El Salvador'], ['GQ', '240', 'Equatorial Guinea'], ['ER', '291', 'Eritrea'], ['EE', '372', 'Estonia'],
+  ['SZ', '268', 'Eswatini'], ['ET', '251', 'Ethiopia'], ['FJ', '679', 'Fiji'], ['FI', '358', 'Finland'], ['FR', '33', 'France'],
+  ['GA', '241', 'Gabon'], ['GM', '220', 'Gambia'], ['GE', '995', 'Georgia'], ['DE', '49', 'Germany'], ['GH', '233', 'Ghana'],
+  ['GR', '30', 'Greece'], ['GD', '1473', 'Grenada'], ['GT', '502', 'Guatemala'], ['GN', '224', 'Guinea'], ['GW', '245', 'Guinea-Bissau'],
+  ['GY', '592', 'Guyana'], ['HT', '509', 'Haiti'], ['HN', '504', 'Honduras'], ['HK', '852', 'Hong Kong'], ['HU', '36', 'Hungary'],
+  ['IS', '354', 'Iceland'], ['IN', '91', 'India'], ['ID', '62', 'Indonesia'], ['IR', '98', 'Iran'], ['IQ', '964', 'Iraq'],
+  ['IE', '353', 'Ireland'], ['IL', '972', 'Israel'], ['IT', '39', 'Italy'], ['JM', '1876', 'Jamaica'], ['JP', '81', 'Japan'],
+  ['JO', '962', 'Jordan'], ['KZ', '7', 'Kazakhstan'], ['KE', '254', 'Kenya'], ['KI', '686', 'Kiribati'], ['KW', '965', 'Kuwait'],
+  ['KG', '996', 'Kyrgyzstan'], ['LA', '856', 'Laos'], ['LV', '371', 'Latvia'], ['LB', '961', 'Lebanon'], ['LS', '266', 'Lesotho'],
+  ['LR', '231', 'Liberia'], ['LY', '218', 'Libya'], ['LI', '423', 'Liechtenstein'], ['LT', '370', 'Lithuania'], ['LU', '352', 'Luxembourg'],
+  ['MO', '853', 'Macau'], ['MG', '261', 'Madagascar'], ['MW', '265', 'Malawi'], ['MY', '60', 'Malaysia'], ['MV', '960', 'Maldives'],
+  ['ML', '223', 'Mali'], ['MT', '356', 'Malta'], ['MR', '222', 'Mauritania'], ['MU', '230', 'Mauritius'], ['MX', '52', 'Mexico'],
+  ['MD', '373', 'Moldova'], ['MC', '377', 'Monaco'], ['MN', '976', 'Mongolia'], ['ME', '382', 'Montenegro'], ['MA', '212', 'Morocco'],
+  ['MZ', '258', 'Mozambique'], ['MM', '95', 'Myanmar'], ['NA', '264', 'Namibia'], ['NP', '977', 'Nepal'], ['NL', '31', 'Netherlands'],
+  ['NZ', '64', 'New Zealand'], ['NI', '505', 'Nicaragua'], ['NE', '227', 'Niger'], ['NG', '234', 'Nigeria'], ['KP', '850', 'North Korea'],
+  ['MK', '389', 'North Macedonia'], ['NO', '47', 'Norway'], ['OM', '968', 'Oman'], ['PK', '92', 'Pakistan'], ['PW', '680', 'Palau'],
+  ['PS', '970', 'Palestine'], ['PA', '507', 'Panama'], ['PG', '675', 'Papua New Guinea'], ['PY', '595', 'Paraguay'], ['PE', '51', 'Peru'],
+  ['PH', '63', 'Philippines'], ['PL', '48', 'Poland'], ['PT', '351', 'Portugal'], ['PR', '1787', 'Puerto Rico'], ['QA', '974', 'Qatar'],
+  ['RO', '40', 'Romania'], ['RU', '7', 'Russia'], ['RW', '250', 'Rwanda'], ['KN', '1869', 'Saint Kitts and Nevis'], ['LC', '1758', 'Saint Lucia'],
+  ['VC', '1784', 'Saint Vincent and the Grenadines'], ['WS', '685', 'Samoa'], ['SM', '378', 'San Marino'], ['ST', '239', 'Sao Tome and Principe'], ['SA', '966', 'Saudi Arabia'],
+  ['SN', '221', 'Senegal'], ['RS', '381', 'Serbia'], ['SC', '248', 'Seychelles'], ['SL', '232', 'Sierra Leone'], ['SG', '65', 'Singapore'],
+  ['SK', '421', 'Slovakia'], ['SI', '386', 'Slovenia'], ['SB', '677', 'Solomon Islands'], ['SO', '252', 'Somalia'], ['ZA', '27', 'South Africa'],
+  ['KR', '82', 'South Korea'], ['SS', '211', 'South Sudan'], ['ES', '34', 'Spain'], ['LK', '94', 'Sri Lanka'], ['SD', '249', 'Sudan'],
+  ['SR', '597', 'Suriname'], ['SE', '46', 'Sweden'], ['CH', '41', 'Switzerland'], ['SY', '963', 'Syria'], ['TW', '886', 'Taiwan'],
+  ['TJ', '992', 'Tajikistan'], ['TZ', '255', 'Tanzania'], ['TH', '66', 'Thailand'], ['TL', '670', 'Timor-Leste'], ['TG', '228', 'Togo'],
+  ['TO', '676', 'Tonga'], ['TT', '1868', 'Trinidad and Tobago'], ['TN', '216', 'Tunisia'], ['TR', '90', 'Turkey'], ['TM', '993', 'Turkmenistan'],
+  ['TV', '688', 'Tuvalu'], ['UG', '256', 'Uganda'], ['UA', '380', 'Ukraine'], ['AE', '971', 'United Arab Emirates'], ['GB', '44', 'United Kingdom'],
+  ['US', '1', 'United States'], ['UY', '598', 'Uruguay'], ['UZ', '998', 'Uzbekistan'], ['VU', '678', 'Vanuatu'], ['VA', '379', 'Vatican City'],
+  ['VE', '58', 'Venezuela'], ['VN', '84', 'Vietnam'], ['YE', '967', 'Yemen'], ['ZM', '260', 'Zambia'], ['ZW', '263', 'Zimbabwe'],
+];
+
+export const POPULAR_COUNTRY_CODES = ['IN', 'AE', 'US', 'GB', 'SG', 'AU', 'CA'];
+
+export async function detectCountryCode() {
+  const ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+  const timer = ctrl ? setTimeout(() => ctrl.abort(), 4000) : null;
+  try {
+    const res = await fetch('https://ipapi.co/json/', ctrl ? { signal: ctrl.signal } : {});
+    const data = await res.json();
+    if (timer) clearTimeout(timer);
+    const code = data && data.country_code;
+    return ATH_COUNTRIES.some((c) => c[0] === code) ? code : null;
+  } catch (e) {
+    if (timer) clearTimeout(timer);
+    return null;
+  }
+}
+
+// Builds the campaign source label: real UTM params when the visitor arrived
+// via a tagged link, else the original hardcoded Google Ads label.
+export function buildSourceLabel() {
+  return utmLabel() || DEFAULT_SOURCE_LABEL;
+}
+
+/* Posts the lead to Sell.do using the confirmed field structure:
+   api_key, sell_do[form][lead][name/email/phone], sell_do[campaign][srd],
+   sell_do[form][note][content]. Fired as a GET with mode:'no-cors'
+   (Sell.do's endpoint doesn't return a readable response either way). */
+export function pushLeadToSellDo(lead) {
+  const utm = getUtmParams();
+  const utmNote = Object.keys(utm).length ? ` | UTM: ${JSON.stringify(utm)}` : '';
+
+  const params = new URLSearchParams();
+  params.append('api_key', CRM_KEY);
+  params.append('sell_do[form][lead][name]', lead.name);
+  if (lead.email) params.append('sell_do[form][lead][email]', lead.email);
+  params.append('sell_do[form][lead][phone]', lead.phone);
+  params.append('sell_do[campaign][srd]', CRM_SRD);
+  params.append('sell_do[form][note][content]', `Project: ${lead.project} | Interest: ${lead.interest} | Source: ${lead.source}${utmNote}`);
+
+  const url = `${CRM_API}?${params.toString()}`;
+  return fetch(url, { method: 'GET', mode: 'no-cors' });
+}
+
+export function reportGoogleAdsConversion() {
+  if (typeof window.gtag === 'function') {
+    window.gtag('event', 'conversion', {
+      send_to: 'AW-18176679899/BEs4COLsy9McENu_qNtD',
+      value: 1.0,
+      currency: 'INR',
+    });
+  }
+}

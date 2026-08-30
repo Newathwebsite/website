@@ -1,0 +1,47 @@
+name: Build and deploy to Hostinger
+
+# Builds both the public site and the admin panel from this one codebase
+# (see package.json's build:public / build:admin scripts and vite.config.js)
+# and FTP-uploads each to its own directory on Hostinger. All connection
+# details are repo secrets — none of them live in this file.
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy-public:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build:public
+      - name: Deploy public site
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist-public/
+          server-dir: ${{ secrets.FTP_PUBLIC_DIR }}/
+
+  deploy-admin:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - run: npm ci
+      - run: npm run build:admin
+      - name: Deploy admin panel
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_SERVER }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          local-dir: ./dist-admin/
+          server-dir: ${{ secrets.FTP_ADMIN_DIR }}/

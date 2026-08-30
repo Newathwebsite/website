@@ -1,0 +1,13 @@
+# React Router handles routing client-side — without this, refreshing any
+# page other than "/" (e.g. /about, /admin/pages) would 404, since the
+# server has no file at that path. This rewrites every request that isn't
+# an existing file/directory back to index.html, letting the app's own
+# router take over from there.
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteBase /
+  RewriteRule ^index\.html$ - [L]
+  RewriteCond %{REQUEST_FILENAME} !-f
+  RewriteCond %{REQUEST_FILENAME} !-d
+  RewriteRule . /index.html [L]
+</IfModule>
