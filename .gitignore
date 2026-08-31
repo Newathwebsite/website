@@ -12,6 +12,7 @@ dist
 dist-public
 dist-admin
 dist-ssr
+*.zip
 *.local
 
 # Editor directories and files
