@@ -94,8 +94,8 @@ function GenericSection({ s }) {
 export default function Home2() {
   const ref = useRef(null);
   const { projects, settings } = useData();
-  const home = settings.homePage;
-  const hero = home.hero;
+  const home = settings.homePage || {};
+  const hero = home.hero || {};
   const sections = home.sections || [];
   useReveal(ref);
 
